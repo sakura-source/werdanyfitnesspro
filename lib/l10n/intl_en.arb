@@ -1,0 +1,21 @@
+{
+  "welcome": "Welcome",
+  "login": "Login",
+  "email": "Email",
+  "password": "Password",
+  "sign_in": "Sign In",
+  "dashboard": "Dashboard",
+  "training": "Training",
+  "nutrition": "Nutrition",
+  "sponsors": "Sponsors",
+  "hormone_tracking": "Hormone Tracking",
+  "buy_now": "Buy Now",
+  "add_meal": "Add Meal",
+  "sets": "Sets",
+  "reps": "Reps",
+  "video_links": "Video Links",
+  "calories": "Calories",
+  "date": "Date",
+  "injection_type": "Injection Type",
+  "timeline": "Timeline"
+}
