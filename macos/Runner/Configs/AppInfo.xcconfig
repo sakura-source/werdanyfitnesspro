@@ -1,0 +1,5 @@
+PRODUCT_NAME = werdany_fitness_pro
+
+PRODUCT_BUNDLE_IDENTIFIER = sakura-source.werdanyfitnessapp
+
+PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
