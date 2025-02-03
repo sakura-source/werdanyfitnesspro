@@ -1,39 +1,119 @@
-name: Build
+name: Build and CI/CD Pipeline
 
 on:
-  file might look:
-
-```yaml
-name: Build
-
-on:
-  push push:
+  push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
-  sonarqube:
-    name: SonarQube
-    runs-on: macos-latest
+  build_and_test:
+    name: Build, Test, and Analyze Code
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Set up Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      # The analysis requires to retrieve dependencies and build successfully
-      - name: Build
+          flutter-version: '3.10.0'
+
+      # 3. Set up Dart
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '>=2.17.0 <3.0.0'
+
+      # 4. Cache Flutter Pub Dependencies
+      - name: Cache Flutter Pub Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # 5. Get Flutter dependencies
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # 6. Run Static Code Analyzer (Lint)
+      - name: Run Code Analyzer (Lint)
+        run: flutter analyze
+
+      # 7. Check Code Formatting
+      - name: Check Code Formatting
+        run: flutter format --set-exit-if-changed .
+
+      # 8. Run Unit Tests
+      - name: Run Unit Tests (Services)
+        run: flutter test test/services
+
+      # 9. Run UI Tests
+      - name: Run UI Tests (Screens)
+        run: flutter test test/screens
+
+  sonarqube_analysis:
+    name: SonarQube Static Code Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Build the project (example commands)
+      - name: Build Project
         run: |
-          # Example build commands
           mkdir build
           cd build
-          cmake:
-    branches:
-      - main
-  pull_request:
- ..
+          cmake ..
           make
-      - name: SonarQube Scan
+
+      # 3. Run SonarQube analysis
+      - name: Run SonarQube Analysis
         uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  deploy:
+    name: Build and Deploy to Firebase
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: github.ref == 'refs/heads/main' && success()
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Set up Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.0'
+
+      # 3. Get Flutter dependencies
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # 4. Build the web app
+      - name: Build Web App
+        run: flutter build web --release
+
+      # 5. Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only hosting --token $FIREBASE_TOKEN
