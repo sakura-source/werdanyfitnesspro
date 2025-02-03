@@ -1,10 +1,18 @@
 name: Build
+
 on:
-  push:
+  file might look:
+
+```yaml
+name: Build
+
+on:
+  push push:
     branches:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarqube:
     name: SonarQube
@@ -15,7 +23,16 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       # The analysis requires to retrieve dependencies and build successfully
       - name: Build
-        run: <mark><commands_to_build_your_project></mark>
+        run: |
+          # Example build commands
+          mkdir build
+          cd build
+          cmake:
+    branches:
+      - main
+  pull_request:
+ ..
+          make
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
         env:
